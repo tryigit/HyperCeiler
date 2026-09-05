@@ -28,6 +28,9 @@ on:
 
 jobs:
   build_app:
+    permissions:
+      contents: read
+      packages: read
     if: |
       (
         startsWith(github.event.head_commit.message, 'app: update version ')
@@ -329,6 +332,7 @@ jobs:
   push_to_debug_group:
     if: |
       github.event_name == 'pull_request' &&
+      github.event.pull_request.head.repo.full_name == github.repository &&
       (
         startsWith(github.event.head_commit.message, 'app: update version ')
         ||
