@@ -30,8 +30,9 @@ import java.util.concurrent.TimeUnit;
 public class ThreadPoolManager {
     private static final int NUM_THREADS = 5;
     private static final long KEEP_ALIVE_SECONDS = 30L;
-    private static volatile ExecutorService executor;
+    private static ExecutorService executor;
 
+    /** Creates the shared worker pool and allows idle core threads to retire. */
     private static ExecutorService createExecutor() {
         ThreadPoolExecutor pool = new ThreadPoolExecutor(
             NUM_THREADS,
@@ -44,22 +45,21 @@ public class ThreadPoolManager {
         return pool;
     }
 
-    public static ExecutorService getInstance() {
+    /** Returns the current worker pool, recreating it after a completed shutdown. */
+    public static synchronized ExecutorService getInstance() {
         if (executor == null || executor.isShutdown()) {
-            synchronized (ThreadPoolManager.class) {
-                if (executor == null || executor.isShutdown()) {
-                    executor = createExecutor();
-                }
-            }
+            executor = createExecutor();
         }
         return executor;
     }
 
-    public static void execute(Runnable task) {
+    /** Submits a fire-and-forget task without racing a concurrent hot-reload shutdown. */
+    public static synchronized void execute(Runnable task) {
         getInstance().execute(task);
     }
 
-    public static Future<?> submit(Runnable task) {
+    /** Submits a task without racing a concurrent hot-reload shutdown. */
+    public static synchronized Future<?> submit(Runnable task) {
         return getInstance().submit(task);
     }
 
