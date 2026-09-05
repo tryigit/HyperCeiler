@@ -93,7 +93,7 @@ public class ContextUtils {
      * @author 焕晨HChen
      */
     public static void getWaitContext(IContext iContext, boolean isSystem) {
-        ThreadPoolManager.getInstance().submit(() -> {
+        ThreadPoolManager.submit(() -> {
             int flag = isSystem ? FlAG_ONLY_ANDROID : FLAG_CURRENT_APP;
             Context context = getContextNoError(flag);
             if (context == null) {
