@@ -19,8 +19,9 @@
 package com.sevtinge.hyperceiler.libhook.utils.api;
 
 import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
+import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -28,13 +29,26 @@ import java.util.concurrent.TimeUnit;
  */
 public class ThreadPoolManager {
     private static final int NUM_THREADS = 5;
+    private static final long KEEP_ALIVE_SECONDS = 30L;
     private static volatile ExecutorService executor;
+
+    private static ExecutorService createExecutor() {
+        ThreadPoolExecutor pool = new ThreadPoolExecutor(
+            NUM_THREADS,
+            NUM_THREADS,
+            KEEP_ALIVE_SECONDS,
+            TimeUnit.SECONDS,
+            new LinkedBlockingQueue<>()
+        );
+        pool.allowCoreThreadTimeOut(true);
+        return pool;
+    }
 
     public static ExecutorService getInstance() {
         if (executor == null || executor.isShutdown()) {
             synchronized (ThreadPoolManager.class) {
                 if (executor == null || executor.isShutdown()) {
-                    executor = Executors.newFixedThreadPool(NUM_THREADS);
+                    executor = createExecutor();
                 }
             }
         }
